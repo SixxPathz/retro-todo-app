@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "text": "Finish coding project",
+    "completed": false,
+    "priority": "high",
+    "due_date": "2025-07-15",
+    "created_at": "2025-07-07 23:11:15",
+    "updated_at": "2025-07-07 23:11:15"
+  },
+  {
+    "id": 2,
+    "text": "Go to the gym",
+    "completed": false,
+    "priority": "medium",
+    "due_date": "2025-07-17",
+    "created_at": "2025-07-08 09:22:46",
+    "updated_at": "2025-07-08 09:22:46"
+  }
+]

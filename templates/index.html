@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List</title>
+    <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <style>
+        body {
+            padding: 2rem;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            font-family: "Press Start 2P", cursive;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f7f7f7;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #212529;
+        }
+        
+        .add-task-form {
+            margin-bottom: 2rem;
+        }
+        
+        .task-input {
+            flex: 1;
+        }
+        
+        .task-list {
+            margin-bottom: 2rem;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: white;
+            border: 4px solid #212529;
+            border-radius: 10px;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .task-item.completed {
+            background: #d4edda;
+            opacity: 0.7;
+        }
+        
+        .task-item.high-priority {
+            border-left: 8px solid #dc3545;
+        }
+        
+        .task-item.medium-priority {
+            border-left: 8px solid #ffc107;
+        }
+        
+        .task-item.low-priority {
+            border-left: 8px solid #28a745;
+        }
+        
+        .task-item.overdue {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .task-text {
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .stats .nes-badge {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .btn-small {
+            font-size: 10px !important;
+            padding: 0.5rem !important;
+            white-space: nowrap;
+        }
+        
+        .nes-input, .nes-select select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .nes-btn {
+            white-space: nowrap;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .filters {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .priority-badge {
+            font-size: 8px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+        }
+        
+        .priority-high {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .priority-medium {
+            background: #ffc107;
+            color: black;
+        }
+        
+        .priority-low {
+            background: #28a745;
+            color: white;
+        }
+        
+        .due-date {
+            font-size: 8px;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .overdue {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+        
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+        
+        .flash-message {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .task-form-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 1rem;
+        }
+        
+        .edit-form {
+            display: none;
+            background: #f8f9fa;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 5px;
+            border: 2px solid #dee2e6;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .task-form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-group {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .task-actions {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .stats .nes-badge {
+                min-width: auto;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 16px;
+            }
+            
+            .btn-small {
+                font-size: 8px !important;
+                padding: 0.3rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .form-group label {
+                font-size: 10px;
+            }
+            
+            .task-actions .nes-btn {
+                font-size: 8px;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .priority-badge {
+                font-size: 6px;
+                padding: 0.1rem 0.2rem;
+            }
+            
+            .due-date {
+                font-size: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="nes-text is-primary">📝 TO DO LIST</h1>
+            <p class="nes-text">Stay organized and productive!</p>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}        
+        <div class="filters">
+            <form method="GET" class="search-box">
+                <label for="search" class="nes-text">Search:</label>
+                <input type="text" 
+                       id="search" 
+                       name="search" 
+                       class="nes-input" 
+                       placeholder="Search tasks..."
+                       value="{{ search }}"
+                       autocomplete="off">
+                <input type="hidden" name="filter" value="{{ filter_status }}">
+            </form>
+            
+            <form method="GET">
+                <label for="filter" class="nes-text">Filter:</label>
+                <div class="nes-select">
+                    <select id="filter" name="filter" onchange="this.form.submit()">
+                        <option value="all" {% if filter_status == 'all' %}selected{% endif %}>All Tasks</option>
+                        <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <input type="hidden" name="search" value="{{ search }}">
+            </form>
+        </div>
+        
+        <form class="add-task-form" method="POST" action="{{ url_for('add_task') }}">
+            <div class="task-form-row">
+                <div class="form-group">
+                    <label for="task" class="nes-text">New Task:</label>
+                    <input type="text" 
+                           id="task" 
+                           name="task" 
+                           class="nes-input" 
+                           placeholder="Enter your new task..."
+                           required
+                           maxlength="500"
+                           autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label for="priority" class="nes-text">Priority:</label>
+                    <div class="nes-select">
+                        <select name="priority" id="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="due_date" class="nes-text">Due Date:</label>
+                    <input type="date" 
+                           id="due_date" 
+                           name="due_date" 
+                           class="nes-input"
+                           min="{{ current_date }}">
+                </div>
+                
+                <div class="form-group" style="min-width: auto; flex: none;">
+                    <button type="submit" class="nes-btn is-primary">Add Task</button>
+                </div>
+            </div>
+        </form>
+        
+        {% if tasks %}
+        <div class="stats">
+            <div class="nes-badge">
+                <span class="is-primary">Total: {{ tasks|length }}</span>
+            </div>
+            <div class="nes-badge">
+                <span class="is-success">Completed: {{ tasks|selectattr('completed')|list|length }}</span>
+            </div>
+            <div class="nes-badge">
+                <span class="is-warning">Pending: {{ tasks|rejectattr('completed')|list|length }}</span>
+            </div>
+            <div class="nes-badge">
+                <span class="is-error">High Priority: {{ tasks|selectattr('priority', 'equalto', 'high')|rejectattr('completed')|list|length }}</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="task-list">
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-item {% if task.completed %}completed{% endif %} {{ task.priority }}-priority {% if task.is_overdue %}overdue{% endif %}">
+                    <div class="task-text {% if task.completed %}completed{% endif %}">
+                        {% if task.completed %}✅{% else %}📝{% endif %} {{ task.text }}
+                        
+                        {% if task.priority %}
+                        <span class="priority-badge priority-{{ task.priority }}">
+                            {{ task.priority.upper() }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if task.due_date %}
+                        <div class="due-date {% if task.is_overdue %}overdue{% endif %}">
+                            📅 Due: {{ task.due_date }}
+                            {% if task.is_overdue %}<strong>(OVERDUE)</strong>{% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <br>
+                        <small class="nes-text" style="font-size: 8px; color: #6c757d;">
+                            Created: {{ task.created_at }}
+                            {% if task.updated_at and task.updated_at != task.created_at %}
+                            | Updated: {{ task.updated_at }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="task-actions">
+                        <button data-task-id="{{ task.id }}" class="nes-btn btn-small is-primary edit-btn">
+                            Edit
+                        </button>
+                        <a href="{{ url_for('toggle_task', task_id=task.id) }}" 
+                           class="nes-btn btn-small {% if task.completed %}is-warning{% else %}is-success{% endif %}">
+                            {% if task.completed %}Undo{% else %}Done{% endif %}
+                        </a>
+                        <a href="{{ url_for('delete_task', task_id=task.id) }}" 
+                           class="nes-btn btn-small is-error"
+                           onclick="return confirm('Are you sure you want to delete this task?')">
+                            Delete
+                        </a>
+                    </div>
+                    
+                    <div id="edit-form-{{ task.id }}" class="edit-form">
+                        <form method="POST" action="{{ url_for('edit_task', task_id=task.id) }}">
+                            <div class="task-form-row">
+                                <div class="form-group">
+                                    <label class="nes-text">Task:</label>
+                                    <input type="text" 
+                                           name="task" 
+                                           class="nes-input" 
+                                           value="{{ task.text }}"
+                                           required
+                                           maxlength="500">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="nes-text">Priority:</label>
+                                    <div class="nes-select">
+                                        <select name="priority">
+                                            <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
+                                            <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                            <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="nes-text">Due Date:</label>
+                                    <input type="date" 
+                                           name="due_date" 
+                                           class="nes-input"
+                                           value="{{ task.due_date or '' }}">
+                                </div>
+                                
+                                <div class="form-group" style="min-width: auto; flex: none;">
+                                    <button type="submit" class="nes-btn btn-small is-success">Save</button>
+                                    <button type="button" data-task-id="{{ task.id }}" class="nes-btn btn-small cancel-btn">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="nes-container is-rounded">
+                        <p class="nes-text">📋 No tasks yet!</p>
+                        <p>Add your first task to get started!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if tasks and tasks|selectattr('completed')|list|length > 0 %}
+        <div class="controls">
+            <a href="{{ url_for('clear_completed') }}" 
+               class="nes-btn is-error"
+               onclick="return confirm('Clear all completed tasks?')">
+                🧹 Clear Completed
+            </a>
+        </div>
+        {% endif %}
+        
+        <div style="text-align: center; margin-top: 2rem; font-size: 10px; color: #6c757d;">
+            <p>✨ Simple & Effective Task Management</p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('task').focus();
+        
+        function toggleEdit(taskId) {
+            const editForm = document.getElementById('edit-form-' + taskId);
+            if (editForm.style.display === 'none' || editForm.style.display === '') {
+                editForm.style.display = 'block';
+            } else {
+                editForm.style.display = 'none';
+            }
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('edit-btn')) {
+                const taskId = e.target.getAttribute('data-task-id');
+                toggleEdit(taskId);
+            }
+            
+            if (e.target.classList.contains('cancel-btn')) {
+                const taskId = e.target.getAttribute('data-task-id');
+                toggleEdit(taskId);
+            }
+        });
+        
+        document.getElementById('search').addEventListener('input', function() {
+            setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                const addForm = document.querySelector('.add-task-form');
+                if (addForm) addForm.submit();
+            }
+            
+            if (e.key === 'Escape') {
+                const editForms = document.querySelectorAll('.edit-form');
+                editForms.forEach(form => form.style.display = 'none');
+            }
+        });
+        
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+        
+        function updateTaskCounter() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.title = `To Do List ${data.pending > 0 ? '(' + data.pending + ')' : ''}`;
+                })
+                .catch(error => console.log('Error updating stats:', error));
+        }
+        
+        updateTaskCounter();
+    </script>
+</body>
+</html>
